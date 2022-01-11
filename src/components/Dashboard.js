@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useAuth } from "../contexts/AuthContext";
-import { Button } from "react-bootstrap";
+import { Button, Form } from "react-bootstrap";
 import { getSingleUser, updateNotice } from "../firebase";
 
 export default function Dashboard() {
@@ -9,11 +9,11 @@ export default function Dashboard() {
   const [notices, setNotices] = useState([]);
   const [currentNotice, setCurrentNotice] = useState("");
   const [activeText, setActiveText] = useState(null);
+  const [isUpdate, setIsUpdate] = useState("");
 
   useEffect(() => {
     (async function () {
       const user = await getSingleUser(window.localStorage.getItem("docId"));
-      console.log({ user });
       setDBuser(user);
     })();
   }, []);
@@ -21,16 +21,14 @@ export default function Dashboard() {
   useEffect(() => {
     (async function () {
       const notices = await getAllNotices();
-      console.log(await notices);
-      setNotices(await notices);
+      setNotices(notices);
     })();
-  }, []);
+  }, [isUpdate, getAllNotices]);
 
-  console.log(currentNotice);
   return (
     <>
       <h2 className="text-center mb-4">Dashboard</h2>
-      <table style={{ width: "90vw" }}>
+      <table style={{ width: "95vw" }}>
         <tbody>
           <tr className="text-center mb-4">
             <th>Notices</th>
@@ -40,38 +38,47 @@ export default function Dashboard() {
             return (
               <tr
                 key={doc.id}
-                style={{ height: "200px", border: "1px solid black" }}
+                style={{
+                  height: "200px",
+                  borderBottom: "1px solid black",
+                  borderTop: "1px solid black",
+                }}
               >
-                <td style={{ width: "60vw", borderRight: "1px solid black" }}>
+                <td style={{ width: "60vw" }}>
                   {DBuser.role === "user" ? (
-                    <textarea
-                      style={{
-                        resize: "none",
-                        width: "100%",
-                        height: "140px",
-                        border: "none",
-                      }}
-                      readOnly
-                      defaultValue={doc.notice}
-                    />
+                    <Form>
+                      <Form.Control
+                        as="textarea"
+                        style={{
+                          resize: "none",
+                          width: "100%",
+                          height: "140px",
+                        }}
+                        readOnly
+                        defaultValue={doc.notice}
+                      ></Form.Control>
+                    </Form>
                   ) : (
-                    <textarea
-                      style={{
-                        resize: "none",
-                        width: "100%",
-                        height: "140px",
-                        border: "none",
-                      }}
-                      onClick={(e) => {
-                        setActiveText(doc.id);
-                        setCurrentNotice(e.target.value);
-                      }}
-                      onChange={(e) => {
-                        console.log(e.target.value);
-                        setCurrentNotice(e.target.value);
-                      }}
-                      value={activeText === doc.id ? currentNotice : doc.notice}
-                    />
+                    <Form>
+                      <Form.Control
+                        as="textarea"
+                        style={{
+                          resize: "none",
+                          width: "100%",
+                          height: "140px",
+                        }}
+                        onClick={(e) => {
+                          setActiveText(doc.id);
+                          setCurrentNotice(e.target.value);
+                        }}
+                        onChange={(e) => {
+                          setCurrentNotice(e.target.value);
+                        }}
+                        value={
+                          activeText === doc.id ? currentNotice : doc.notice
+                        }
+                      ></Form.Control>
+                    </Form>
                   )}
                   {activeText === doc.id && (
                     <Button
@@ -88,10 +95,11 @@ export default function Dashboard() {
                           notice: currentNotice,
                         };
                         updateNotice(doc.id, noticeDocNew);
+                        setIsUpdate(doc.id);
                       }}
                       disabled={DBuser.role === "user" ? true : false}
                     >
-                      submit
+                      Update
                     </Button>
                   )}
                 </td>
@@ -99,27 +107,35 @@ export default function Dashboard() {
                   style={{
                     overflowY: "scroll",
                     height: "150px",
-                    width: "30vw",
+                    width: "35vw",
                   }}
                 >
-                  <ol style={{ height: "150px" }}>
-                    {doc.editors.map((editor, index) => {
+                  <ol
+                    style={{
+                      height: "150px",
+                      listStyle: "none",
+                      margin: "5px",
+                      padding: "5px",
+                    }}
+                  >
+                    {[...doc.editors].reverse().map((editor, index) => {
                       return (
                         <li key={editor.editTime}>
-                          <p style={{ margin: "0px" }}>
-                            Edited by {editor.editedBy}{" "}
-                          </p>
-                          <p style={{ margin: "0px" }}>
-                            at{" "}
+                          <p
+                            style={{
+                              margin: "2px",
+                              borderBottom: "1px solid gray",
+                            }}
+                          >
+                            Edited by {editor.editedBy} at{" "}
                             {editor.editTime
                               .toDate()
                               .toString()
                               .substring(
                                 0,
-                                editor.editTime.toDate().toString().length - 34
+                                editor.editTime.toDate().toString().length - 31
                               )}
                           </p>
-                          {/*  */}
                         </li>
                       );
                     })}
