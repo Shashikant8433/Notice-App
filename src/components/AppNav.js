@@ -21,7 +21,7 @@ export default function AppNav() {
           style={{ cursor: "pointer" }}
           onClick={() => history.push("/")}
         >
-          ValueEnable
+          Notice-App
         </Navbar.Brand>
         <Navbar.Toggle aria-controls="responsive-navbar-nav" />
         <Navbar.Collapse
